@@ -116,19 +116,24 @@ class IcebergStore:
                 })
 
             # Create PyArrow table
+            # NOTE: nullable=False on every field except "keywords" — this must
+            # match the Iceberg table schema (POSTS_SCHEMA above), which marks
+            # these same fields as `required`. PyArrow fields default to
+            # nullable=True, which silently fails Iceberg's schema validation
+            # on every append if left unset.
             arrow_table = pa.Table.from_pylist(
                 rows,
                 schema=pa.schema([
-                    pa.field("id", pa.string()),
-                    pa.field("username", pa.string()),
-                    pa.field("text", pa.string()),
-                    pa.field("topic", pa.string()),
-                    pa.field("timestamp", pa.timestamp("us", tz="UTC")),
-                    pa.field("likes", pa.int32()),
-                    pa.field("reposts", pa.int32()),
-                    pa.field("sentiment_label", pa.string()),
-                    pa.field("sentiment_score", pa.float32()),
-                    pa.field("keywords", pa.string()),
+                    pa.field("id", pa.string(), nullable=False),
+                    pa.field("username", pa.string(), nullable=False),
+                    pa.field("text", pa.string(), nullable=False),
+                    pa.field("topic", pa.string(), nullable=False),
+                    pa.field("timestamp", pa.timestamp("us", tz="UTC"), nullable=False),
+                    pa.field("likes", pa.int32(), nullable=False),
+                    pa.field("reposts", pa.int32(), nullable=False),
+                    pa.field("sentiment_label", pa.string(), nullable=False),
+                    pa.field("sentiment_score", pa.float32(), nullable=False),
+                    pa.field("keywords", pa.string(), nullable=True),
                 ]),
             )
 
